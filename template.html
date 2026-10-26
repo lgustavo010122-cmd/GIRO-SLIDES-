@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{{titulo_pagina}}</title>
 <style>
-:root{--bg:#fff;--soft:#f2f4f6;--card:#eceff2;--ink:#111418;--mut:#5f6b7a;--line:#d9dee5;--blue:#2f6fd0;--wa:#1f9d57;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--soft:#151a22;--card:#1b212b;--ink:#f1f3f7;--mut:#98a2b3;--line:#2a3140;color-scheme:dark}}
+:root{--bg:#fff;--soft:#f2f4f6;--card:#eceff2;--ink:#111418;--mut:#5f6b7a;--line:#d9dee5;--blue:#2f6fd0;--wa:#1f9d57;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#0e1116;--soft:#151a22;--card:#1b212b;--ink:#f1f3f7;--mut:#98a2b3;--line:#2a3140;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1116;--soft:#151a22;--card:#1b212b;--ink:#f1f3f7;--mut:#98a2b3;--line:#2a3140;color-scheme:dark}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Helvetica Neue","Segoe UI",Inter,Arial,sans-serif;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60}
@@ -16,9 +17,11 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:va
 nav{max-width:1100px;margin:auto;padding:0 22px;height:64px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
 .logo{font-weight:800;letter-spacing:.02em;font-size:20px;text-decoration:none}
 nav ul{display:flex;gap:30px;list-style:none;margin:0;padding:0;font-size:15px}nav ul a{text-decoration:none}nav ul a:hover{color:var(--blue)}
-.cartw{justify-self:end;position:relative}
+.cartw{justify-self:end;position:relative;display:flex;align-items:center;gap:8px}
 .cart{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;position:relative}
 .cart svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.theme-toggle{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;display:grid;place-items:center}
+.theme-toggle svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .badge{position:absolute;top:-2px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--blue);color:#fff;font-size:11px;display:grid;place-items:center;padding:0 4px}
 @media(max-width:760px){nav ul{display:none}nav{grid-template-columns:1fr auto}}
 .hero{background:var(--soft)}
@@ -75,6 +78,10 @@ footer{border-top:1px solid var(--line);color:var(--mut);font-size:14px;padding:
 .cl{display:block;width:100%;margin-top:6px;background:none;border:0;color:var(--mut);cursor:pointer;font:inherit;font-size:14px;padding:8px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script>
+var savedTheme=null;
+try{savedTheme=localStorage.getItem("giro-theme");if(savedTheme==="dark"||savedTheme==="light")document.documentElement.dataset.theme=savedTheme;else savedTheme=null}catch(e){}
+</script>
 </head>
 <body>
 <header><nav>
@@ -140,6 +147,13 @@ var WHATSAPP={{whatsapp_js}};
 var P={{produtos_js}};
 var cats={{cores_js}},cur="Todos",sel={},curOne=null;
 var $=function(i){return document.getElementById(i)};
+var themeToggle=document.createElement("button");themeToggle.id="themeToggle";themeToggle.type="button";themeToggle.className="theme-toggle";themeToggle.setAttribute("aria-label","Ativar modo noturno");themeToggle.setAttribute("aria-pressed","false");document.querySelector(".cartw").prepend(themeToggle);
+var darkModeIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/></svg>',lightModeIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
+function activeTheme(){return document.documentElement.dataset.theme||(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}
+function updateThemeToggle(){var dark=activeTheme()==="dark",label=dark?"Ativar modo claro":"Ativar modo noturno";themeToggle.innerHTML=dark?lightModeIcon:darkModeIcon;themeToggle.setAttribute("aria-label",label);themeToggle.title=label;themeToggle.setAttribute("aria-pressed",dark?"true":"false")}
+themeToggle.addEventListener("click",function(){var next=activeTheme()==="dark"?"light":"dark";document.documentElement.dataset.theme=next;savedTheme=next;try{localStorage.setItem("giro-theme",next)}catch(e){}updateThemeToggle()});
+if(window.matchMedia){var colorScheme=window.matchMedia("(prefers-color-scheme: dark)"),schemeChanged=function(){if(!savedTheme)updateThemeToggle()};if(colorScheme.addEventListener)colorScheme.addEventListener("change",schemeChanged);else if(colorScheme.addListener)colorScheme.addListener(schemeChanged)}
+updateThemeToggle();
 $("himg").src={{imagem_destaque_js}};
 var wl="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Olá! Gostaria de falar com o comercial da Giro Slides.");
 document.querySelectorAll("[data-wa]").forEach(function(a){a.href=wl;a.target="_blank";a.rel="noopener"});
