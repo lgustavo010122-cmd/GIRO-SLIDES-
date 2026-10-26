@@ -23,6 +23,7 @@ nav ul{display:flex;gap:30px;list-style:none;margin:0;padding:0;font-size:15px}n
 .theme-toggle{background:none;border:0;color:var(--ink);cursor:pointer;padding:6px;display:grid;place-items:center}
 .theme-toggle svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .badge{position:absolute;top:-2px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--blue);color:#fff;font-size:11px;display:grid;place-items:center;padding:0 4px}
+.cart-overlay{position:fixed;inset:0;z-index:90;display:none;place-items:stretch end;background:rgba(10,14,20,.55)}.cart-overlay.on{display:grid}.cart-panel{width:min(480px,100%);height:100%;display:flex;flex-direction:column;background:var(--bg);padding:22px;box-shadow:-18px 0 50px rgba(0,0,0,.2);animation:cartIn .22s ease-out}.cart-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.cart-head h2{font-size:25px}.cart-close{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:var(--bg);color:var(--ink);font-size:24px;cursor:pointer}.cart-count{color:var(--mut);margin:4px 0 0}.cart-items{flex:1;overflow:auto;display:grid;align-content:start;gap:12px;padding:20px 0}.cart-item{display:grid;grid-template-columns:86px 1fr auto;gap:12px;align-items:center;background:var(--card);padding:10px;border-radius:14px}.cart-item img{width:86px;height:78px;object-fit:cover;border-radius:9px}.cart-item h3{font-size:14px;text-transform:uppercase;margin:0 0 3px}.cart-item p{font-size:13px;color:var(--mut);margin:0}.cart-item .price{color:var(--ink);font-weight:700;margin-top:5px}.cart-remove{border:0;background:none;color:var(--mut);text-decoration:underline;font:inherit;font-size:12px;cursor:pointer;padding:6px}.cart-empty{text-align:center;padding:34px 14px;background:var(--soft);border-radius:14px;color:var(--mut)}.cart-empty button{margin-top:8px;border:0;border-radius:99px;background:var(--blue);color:#fff;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer}.cart-foot{border-top:1px solid var(--line);padding-top:16px;display:grid;gap:10px}.cart-checkout,.cart-continue{display:block;text-align:center;padding:13px 18px;border-radius:99px;text-decoration:none;font-weight:700}.cart-checkout{background:var(--wa);color:#fff}.cart-continue{border:1px solid var(--line)}@keyframes cartIn{from{transform:translateX(24px);opacity:.6}}@media(max-width:600px){.cart-panel{padding:18px}.cart-item{grid-template-columns:72px 1fr auto}.cart-item img{width:72px;height:72px}}
 @media(max-width:760px){nav ul{display:none}nav{grid-template-columns:1fr auto}}
 .hero{background:var(--soft)}
 .hg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:30px;align-items:center;padding:56px 0 34px}
@@ -141,6 +142,7 @@ try{savedTheme=localStorage.getItem("giro-theme");if(savedTheme==="dark"||savedT
 <section class="soft cta"><div class="w"><h2>{{cta_titulo}}</h2><p>{{cta_subtitulo}}</p><a class="pill" data-wa href="#">Solicitar cotação</a></div></section>
 <footer><div class="w"><span>{{rodape}}</span><span>{{rodape_aviso}}</span></div></footer>
 
+<div class="cart-overlay" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartTitle"><section class="cart-panel"><div class="cart-head"><h2 id="cartTitle">Seu carrinho</h2><button class="cart-close" id="cartClose" type="button" aria-label="Fechar carrinho">×</button></div><p class="cart-count" id="cartCount"></p><div class="cart-items" id="cartItems"></div><div class="cart-foot"><a class="cart-checkout" id="cartCheckout" href="#" target="_blank" rel="noopener">Pedir cotação pelo WhatsApp</a><a class="cart-continue" id="cartContinue" href="#catalogo">Continuar comprando</a></div></section></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true"><div class="box">
 <img id="mimg" alt=""><h2 id="mt"></h2><p id="msg"></p>
 <a class="wa" id="wa" href="#" target="_blank" rel="noopener">Continuar no WhatsApp</a>
@@ -179,6 +181,7 @@ return '<div class="item'+(sel[i]?" sel":"")+'" data-i="'+i+'"><div class="im"><
 }).join("");
 $("badge").textContent=count();try{localStorage.setItem("giro-cart",JSON.stringify(sel))}catch(e){}
 }
+function renderCart(){var ids=Object.keys(sel).map(Number);$("cartCount").textContent=ids.length?ids.length+(ids.length===1?" produto selecionado":" produtos selecionados"):"Seu carrinho está vazio.";$("cartCheckout").hidden=!ids.length;$("cartItems").innerHTML=ids.length?ids.map(function(i){var p=P[i];return '<article class="cart-item"><img src="'+p.img+'" alt="'+p.n+' '+p.c+'"><div><h3>'+p.n+'</h3><p>'+p.c+'</p><p class="price">Atacado: '+p.p+'</p></div><button class="cart-remove" type="button" data-remove="'+i+'">Remover</button></article>'}).join(""):'<div class="cart-empty">Seu carrinho está vazio.<br><button type="button" id="cartBrowse">Ver catálogo</button></div>';var text="Olá! Gostaria de uma cotação de atacado da *Giro Slides*:\n"+ids.map(function(i){return "• "+P[i].n+" "+P[i].c+" — "+P[i].p}).join("\n")+"\nPode me atender?";$("cartCheckout").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(text)}
 function open_(ids){
 var nomes=ids.map(function(i){return P[i].n+" "+P[i].c});
 var txt="Olá! Gostaria de uma cotação de atacado da *Giro Slides*:\n"+nomes.map(function(s){return "• "+s}).join("\n")+"\nPode me atender?";
@@ -194,7 +197,8 @@ $("modal").classList.add("on");
 $("tabs").addEventListener("click",function(e){var c=e.target.dataset.c;if(c){cur=c;render()}});
 $("grid").addEventListener("click",function(e){var it=e.target.closest(".item");if(!it)return;var i=+it.dataset.i;if(e.target.closest(".addc")){if(sel[i])delete sel[i];else sel[i]=1;render();return}open_([i])});
 $("madd").onclick=function(){if(curOne===null)return;if(sel[curOne])delete sel[curOne];else sel[curOne]=1;render();$("modal").classList.remove("on")};
-$("cart").onclick=function(){location.href="carrinho.html"};
+$("cart").onclick=function(){$("cartModal").classList.add("on");renderCart()};
+$("cartClose").onclick=function(){$("cartModal").classList.remove("on")};$("cartContinue").onclick=function(){$("cartModal").classList.remove("on")};$("cartModal").addEventListener("click",function(e){if(e.target.id==="cartModal")$("cartModal").classList.remove("on")});$("cartItems").addEventListener("click",function(e){if(e.target.id==="cartBrowse"){$("cartModal").classList.remove("on");location.hash="catalogo";return}var button=e.target.closest("[data-remove]");if(!button)return;delete sel[button.dataset.remove];render();renderCart()});
 $("close").onclick=function(){$("modal").classList.remove("on")};
 $("modal").addEventListener("click",function(e){if(e.target.id==="modal")$("modal").classList.remove("on")});
 render();
