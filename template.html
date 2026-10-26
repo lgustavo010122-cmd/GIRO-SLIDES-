@@ -25,7 +25,8 @@ nav ul{display:flex;gap:30px;list-style:none;margin:0;padding:0;font-size:15px}n
 .badge{position:absolute;top:-2px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--blue);color:#fff;font-size:11px;display:grid;place-items:center;padding:0 4px}
 @media(max-width:760px){nav ul{display:none}nav{grid-template-columns:1fr auto}}
 .hero{background:var(--soft)}
-.hg{display:grid;grid-template-columns:1fr 1.05fr;gap:30px;align-items:center;padding:56px 0 34px}
+.hg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:30px;align-items:center;padding:56px 0 34px}
+.hg>div{min-width:0}
 @media(max-width:860px){.hg{grid-template-columns:1fr;padding:36px 0 24px}}
 .hero h1{font-size:clamp(38px,5.6vw,62px);line-height:1.04;font-weight:800}
 .hero p{font-size:18px;margin:18px 0 26px;max-width:420px}
@@ -35,6 +36,12 @@ nav ul{display:flex;gap:30px;list-style:none;margin:0;padding:0;font-size:15px}n
 .model{transform:rotateY(var(--ry,0deg)) scale(var(--z,1));transition:transform .5s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
 .stage.drag .model{transition:none}
 .model img{display:block;width:100%;aspect-ratio:4/3.3;object-fit:cover;border-radius:26px;box-shadow:0 40px 60px -20px rgba(17,20,24,.45);pointer-events:none}
+.hero-gallery{display:flex;min-width:0;max-width:100%;gap:10px;overflow-x:auto;padding:14px 2px 10px;scroll-snap-type:x proximity;overscroll-behavior-inline:contain}
+.hero-thumb{flex:0 0 64px;width:64px;height:64px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;scroll-snap-align:start;transition:border-color .2s,transform .2s}
+.hero-thumb:hover{transform:translateY(-2px)}
+.hero-thumb[aria-pressed="true"]{border:2px solid var(--blue);padding:2px}
+.hero-thumb:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.hero-thumb img{display:block;width:100%;height:100%;object-fit:cover;border-radius:8px}
 .spin{animation:spin 1.6s ease-in-out}
 @keyframes spin{25%{--ry:-35deg}}
 .ctrl{display:flex;justify-content:center;gap:0;margin-top:22px;font-size:14px}
@@ -99,6 +106,7 @@ try{savedTheme=localStorage.getItem("giro-theme");if(savedTheme==="dark"||savedT
 </div>
 <div>
 <div class="stage" id="stage"><div class="model" id="model"><img id="himg" alt="Chinelo slide Giro Slides" draggable="false"></div></div>
+<div class="hero-gallery" id="heroGallery" role="group" aria-label="Escolha a foto de destaque"></div>
 <div class="ctrl">
 <button id="bSpin"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M12 3l-2 2M12 3l2 2M12 21l-2-2M12 21l2-2M3 12l2-2M3 12l2 2M21 12l-2-2M21 12l-2 2"/></svg>Gire o Modelo</button>
 <button id="bZoom">Zoom</button><button id="bDet">Detalhes</button>
@@ -145,6 +153,7 @@ try{savedTheme=localStorage.getItem("giro-theme");if(savedTheme==="dark"||savedT
 <script>
 var WHATSAPP={{whatsapp_js}};
 var P={{produtos_js}};
+var HERO_PHOTOS={{fotos_destaque_js}};
 var cats={{cores_js}},cur="Todos",sel={},curOne=null;
 var $=function(i){return document.getElementById(i)};
 var themeToggle=document.createElement("button");themeToggle.id="themeToggle";themeToggle.type="button";themeToggle.className="theme-toggle";themeToggle.setAttribute("aria-label","Ativar modo noturno");themeToggle.setAttribute("aria-pressed","false");document.querySelector(".cartw").prepend(themeToggle);
@@ -155,6 +164,10 @@ themeToggle.addEventListener("click",function(){var next=activeTheme()==="dark"?
 if(window.matchMedia){var colorScheme=window.matchMedia("(prefers-color-scheme: dark)"),schemeChanged=function(){if(!savedTheme)updateThemeToggle()};if(colorScheme.addEventListener)colorScheme.addEventListener("change",schemeChanged);else if(colorScheme.addListener)colorScheme.addListener(schemeChanged)}
 updateThemeToggle();
 $("himg").src={{imagem_destaque_js}};
+function selectHeroPhoto(index){var photo=HERO_PHOTOS[index];if(!photo)return;$("himg").src=photo.img;$("himg").alt="Chinelo slide "+photo.n+(photo.c?" "+photo.c:"");$("heroGallery").querySelectorAll(".hero-thumb").forEach(function(button,i){button.setAttribute("aria-pressed",i===index?"true":"false")})}
+HERO_PHOTOS.forEach(function(photo,index){var button=document.createElement("button");button.type="button";button.className="hero-thumb";button.dataset.photo=index;button.setAttribute("aria-label","Exibir "+photo.n+(photo.c?" "+photo.c:""));button.setAttribute("aria-pressed","false");button.title=photo.n+(photo.c?" · "+photo.c:"");var img=document.createElement("img");img.src=photo.img;img.alt="";img.loading="lazy";button.appendChild(img);$("heroGallery").appendChild(button)});
+$("heroGallery").addEventListener("click",function(e){var button=e.target.closest(".hero-thumb");if(button)selectHeroPhoto(+button.dataset.photo)});
+if(HERO_PHOTOS.length)selectHeroPhoto(0);
 var wl="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Olá! Gostaria de falar com o comercial da Giro Slides.");
 document.querySelectorAll("[data-wa]").forEach(function(a){a.href=wl;a.target="_blank";a.rel="noopener"});
 function count(){return Object.keys(sel).length}
