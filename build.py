@@ -62,6 +62,12 @@ def main():
     shutil.rmtree(DIST, ignore_errors=True)
     shutil.copytree(RAIZ / "static", DIST)
     (DIST / "index.html").write_text(saida, encoding="utf-8")
+    cart_tpl = (RAIZ / "cart_template.html").read_text(encoding="utf-8")
+    cart_html = re.sub(r"\{\{(\w+)\}\}", lambda m: valores.get(m.group(1), m.group(0)), cart_tpl)
+    faltando_cart = set(re.findall(r"\{\{(\w+)\}\}", cart_html))
+    if faltando_cart:
+        raise SystemExit(f"Chaves sem valor no carrinho: {', '.join(sorted(faltando_cart))}")
+    (DIST / "carrinho.html").write_text(cart_html, encoding="utf-8")
 
     print(f"Site gerado em dist/ — {len(prods)} produtos, {len(cores)} cores.")
 
