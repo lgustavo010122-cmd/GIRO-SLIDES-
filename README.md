@@ -1,5 +1,7 @@
 # Giro Slides — site de atacado
 
+[Ver o site publicado](https://lgustavo010122-cmd.github.io/GIRO-SLIDES-/#catalogo)
+
 O conteúdo do site (produtos, preços, cores, WhatsApp e textos) fica no banco **SQLite `giro.db`**.
 O arquivo `build.py` lê o banco e gera o site na pasta `dist/`. No GitHub, isso acontece sozinho a cada push.
 
